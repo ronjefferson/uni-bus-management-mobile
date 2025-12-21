@@ -43,14 +43,13 @@ export default function ParentDashboard() {
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       
-      {/* --- Purple Header --- */}
       <View style={styles.header}>
         <Text style={styles.dateText}>{currentDate}</Text>
         <Text style={styles.welcomeText}>Welcome,</Text>
         <Text style={styles.nameText}>{parentName}</Text>
       </View>
 
-      {/* --- White Rounded Sheet --- */}
+      
       <View style={styles.whiteSheet}>
         <View style={styles.sheetHandle} />
         
@@ -92,11 +91,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   
-  // Header
   header: {
     paddingHorizontal: 24,
     paddingTop: 10,
-    paddingBottom: 30, // Spacing above the white sheet
+    paddingBottom: 30, 
   },
   dateText: {
     color: '#A5A5C7',
@@ -119,10 +117,10 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
 
-  // White Sheet
+  
   whiteSheet: {
     flex: 1,
-    backgroundColor: '#F9FAFB', // Very light gray for contrast with white cards
+    backgroundColor: '#F9FAFB',
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     overflow: 'hidden',
@@ -141,7 +139,6 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
-  // Content
   sectionTitle: {
     fontSize: 22,
     fontWeight: '800',
@@ -154,7 +151,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
 
-  // News Cards
   newsList: {
     gap: 16,
   },
@@ -162,7 +158,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 20,
     padding: 20,
-    // Flat style, no border
   },
   newsHeader: {
     flexDirection: 'row',

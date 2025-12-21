@@ -20,7 +20,6 @@ const WEEK_DAYS = [
   { code: 'Th', label: 'Thu' }, { code: 'Fr', label: 'Fri' }, { code: 'Sa', label: 'Sat' }, { code: 'Su', label: 'Sun' },
 ];
 
-// --- Detail Sheet Component ---
 const StudentDetailSheet = ({ student, onClose }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(Dimensions.get('window').height)).current;
@@ -29,12 +28,10 @@ const StudentDetailSheet = ({ student, onClose }) => {
   const { schedule_details, parents } = student;
   const activeDays = schedule_details?.days_list || [];
 
-  // --- Pan Responder for Dragging ---
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, gestureState) => {
-        // Only trigger if dragging DOWN
         return gestureState.dy > 0;
       },
       onPanResponderMove: (_, gestureState) => {
@@ -43,11 +40,9 @@ const StudentDetailSheet = ({ student, onClose }) => {
         }
       },
       onPanResponderRelease: (_, gestureState) => {
-        // Close if dragged down far enough or flicked fast
         if (gestureState.dy > 150 || gestureState.vy > 0.5) {
           handleClose();
         } else {
-          // Spring back to top
           Animated.spring(slideAnim, {
             toValue: 0,
             useNativeDriver: true,
@@ -88,13 +83,11 @@ const StudentDetailSheet = ({ student, onClose }) => {
           { transform: [{ translateY: slideAnim }] }
         ]}
       >
-        {/* Drag Handle Area */}
         <View style={styles.dragHandleArea} {...panResponder.panHandlers}>
           <View style={styles.sheetHandle} />
         </View>
         
         <ScrollView contentContainerStyle={styles.sheetContent}>
-          {/* Header Section */}
           <View style={styles.sheetHeader}>
             <View style={styles.sheetAvatar}>
               <Text style={styles.sheetAvatarText}>
@@ -105,7 +98,6 @@ const StudentDetailSheet = ({ student, onClose }) => {
             <Text style={styles.sheetId}>{student.university_id}</Text>
           </View>
 
-          {/* Student Info */}
           <View style={styles.infoSection}>
             <Text style={styles.sectionTitle}>Student Information</Text>
             
@@ -126,7 +118,6 @@ const StudentDetailSheet = ({ student, onClose }) => {
             </View>
 
             <View style={styles.row}>
-              {/* FIXED: Course Box given flex: 2 to take more space, added numberOfLines */}
               <View style={[styles.infoBox, { flex: 2, marginRight: 8 }]}>
                 <Text style={styles.label}>Course</Text>
                 <Text 
@@ -147,7 +138,6 @@ const StudentDetailSheet = ({ student, onClose }) => {
 
           <View style={styles.divider} />
 
-          {/* Schedule Grid */}
           <View style={styles.scheduleSection}>
             <Text style={styles.sectionTitle}>Weekly Schedule</Text>
             <View style={styles.tableContainer}>
@@ -165,7 +155,6 @@ const StudentDetailSheet = ({ student, onClose }) => {
 
           <View style={styles.divider} />
 
-          {/* Parents Section */}
           <View style={styles.infoSection}>
             <Text style={styles.sectionTitle}>Linked Parents</Text>
             {parents && parents.length > 0 ? (
@@ -193,7 +182,6 @@ const StudentDetailSheet = ({ student, onClose }) => {
   );
 };
 
-// --- List Item Component ---
 const StudentListItem = ({ student, onPress }) => {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
@@ -233,7 +221,6 @@ export default function AdminStudentList() {
       </View>
 
       <View style={styles.whiteSheet}>
-        {/* Search Bar */}
         <View style={styles.searchContainer}>
           <View style={styles.searchBar}>
             <Ionicons name="search" size={20} color="#9CA3AF" style={{ marginRight: 8 }} />
@@ -309,14 +296,13 @@ const styles = StyleSheet.create({
 
   whiteSheet: { flex: 1, backgroundColor: '#F9FAFB', borderTopLeftRadius: 32, borderTopRightRadius: 32, overflow: 'hidden' },
 
-  searchContainer: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16, backgroundColor: '#F9FAFB', borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.03)' },
-  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ffffff', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 4, elevation: 2 },
+  searchContainer: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16, backgroundColor: '#F9FAFB', borderBottomWidth: 0 },
+  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12 },
   searchInput: { flex: 1, fontSize: 16, color: '#1F2937' },
 
   listContent: { paddingHorizontal: 24, paddingTop: 10, paddingBottom: 40 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 40 },
 
-  // List Item Styles
   card: { backgroundColor: '#ffffff', borderRadius: 16, padding: 16, marginBottom: 12 },
   row: { flexDirection: 'row', alignItems: 'center' },
   avatarContainer: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center', marginRight: 16 },
@@ -325,12 +311,10 @@ const styles = StyleSheet.create({
   nameText: { fontSize: 16, fontWeight: '700', color: '#1F2937', marginBottom: 2 },
   idText: { fontSize: 13, color: '#6B7280' },
 
-  // Modal Styles
   modalContainer: { flex: 1, justifyContent: 'flex-end' },
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
   sheet: { backgroundColor: 'white', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '85%', width: '100%' },
   
-  // New Drag Handle Area
   dragHandleArea: { width: '100%', height: 30, alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
   sheetHandle: { width: 40, height: 5, backgroundColor: '#E5E7EB', borderRadius: 3 },
   

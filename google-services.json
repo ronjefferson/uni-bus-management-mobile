@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "148980949074",
+    "project_id": "swe6202-project",
+    "storage_bucket": "swe6202-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:148980949074:android:77aac32da4e651ffc47f8b",
+        "android_client_info": {
+          "package_name": "com.nsania.myapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDK94xF0BO8PWoAVInu9gO3gZLOrZbzl9k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

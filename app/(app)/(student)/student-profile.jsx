@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { 
   View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, 
-  ScrollView, Modal, Pressable, Animated, Dimensions, Easing, Platform 
+  ScrollView, Modal, Pressable, Animated, Dimensions, Platform, PanResponder 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,36 +14,56 @@ export default function ProfileScreen() {
     showAccountsModal, handleOpenAccounts, handleCloseAccounts
   } = useStudentProfileViewModel();
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(0)).current;
   const screenHeight = Dimensions.get('window').height;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(screenHeight)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 0,
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) slideAnim.setValue(gestureState.dy);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 150 || gestureState.vy > 0.5) {
+          closeModal();
+        } else {
+          Animated.spring(slideAnim, { 
+            toValue: 0, 
+            useNativeDriver: true, 
+            bounciness: 4 
+          }).start();
+        }
+      },
+    })
+  ).current;
 
   const openModal = () => {
     handleOpenAccounts(); 
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
-      Animated.spring(slideAnim, { toValue: 1, useNativeDriver: true, damping: 20 })
+      Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, damping: 20 })
     ]).start();
   };
 
   const closeModal = () => {
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 250, useNativeDriver: true, easing: Easing.in(Easing.cubic) })
+      Animated.timing(slideAnim, { toValue: screenHeight, duration: 250, useNativeDriver: true })
     ]).start(() => {
       handleCloseAccounts();
     });
   };
 
-  const sheetTranslateY = slideAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [screenHeight, 0],
-  });
-
-  const backdropOpacity = fadeAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 0.5],
-  });
+  const formatJoinedDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    return `${day}/${month}/${year}`;
+  };
 
   if (isLoading) {
     return (
@@ -110,7 +130,7 @@ export default function ProfileScreen() {
               </View>
               <View>
                 <Text style={styles.label}>Joined Date</Text>
-                <Text style={styles.value}>{new Date(student?.created_at).toLocaleDateString()}</Text>
+                <Text style={styles.value}>{formatJoinedDate(student?.created_at)}</Text>
               </View>
             </View>
           </View>
@@ -138,13 +158,18 @@ export default function ProfileScreen() {
       <Modal transparent={true} visible={showAccountsModal} onRequestClose={closeModal} animationType="none">
         <View style={styles.modalContainer}>
           
-          <Animated.View style={[styles.backdrop, { opacity: backdropOpacity }]}>
+          <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]}>
             <Pressable style={{flex: 1}} onPress={closeModal} />
           </Animated.View>
 
-          <Animated.View style={[styles.modalSheet, { transform: [{ translateY: sheetTranslateY }] }]}>
-            <View style={styles.sheetHandle} />
-            <Text style={styles.sheetTitle}>Parents & Guardians</Text>
+          <Animated.View 
+            style={[styles.modalSheet, { transform: [{ translateY: slideAnim }] }]}
+            {...panResponder.panHandlers}
+          >
+            <View style={styles.dragHandleArea}>
+              <View style={styles.sheetHandle} />
+              <Text style={styles.sheetTitle}>Parents & Guardians</Text>
+            </View>
 
             {isAccountsLoading ? (
               <ActivityIndicator size="large" color="#404072ff" style={{marginTop: 20}} />
@@ -227,7 +252,9 @@ const styles = StyleSheet.create({
   modalContainer: { flex: 1, justifyContent: 'flex-end' },
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
   modalSheet: { backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 40, elevation: 10 },
-  sheetHandle: { width: 40, height: 5, backgroundColor: '#e5e7eb', borderRadius: 3, alignSelf: 'center', marginBottom: 20 },
+  
+  dragHandleArea: { width: '100%', alignItems: 'center' },
+  sheetHandle: { width: 40, height: 5, backgroundColor: '#e5e7eb', borderRadius: 3, marginBottom: 20 },
   sheetTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: '#111' },
   
   parentCard: { flexDirection: 'row', backgroundColor: '#F9FAFB', padding: 15, borderRadius: 12, marginBottom: 10, alignItems: 'center' },

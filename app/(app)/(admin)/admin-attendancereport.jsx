@@ -183,7 +183,7 @@ const ScanLogsList = () => {
       <Modal transparent={true} visible={isFilterVisible} onRequestClose={closeFilter} animationType="none">
         <View style={styles.modalContainer}>
           <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]}>
-             <Pressable style={{flex: 1}} onPress={closeFilter} />
+              <Pressable style={{flex: 1}} onPress={closeFilter} />
           </Animated.View>
           
           <Animated.View 
@@ -390,9 +390,9 @@ const styles = StyleSheet.create({
   headerSubtitle: { fontSize: 14, color: '#E5E7EB', opacity: 0.9 },
   whiteSheet: { flex: 1, backgroundColor: '#F9FAFB', borderTopLeftRadius: 32, borderTopRightRadius: 32, overflow: 'hidden' },
 
-  tabBar: { flexDirection: 'row', backgroundColor: 'white', padding: 4, margin: 16, borderRadius: 16 },
+  tabBar: { flexDirection: 'row', backgroundColor: 'transparent', padding: 4, margin: 16, borderRadius: 16 },
   tab: { flex: 1, paddingVertical: 10, alignItems: 'center', borderRadius: 12 },
-  tabActive: { backgroundColor: '#F3F4F6' },
+  tabActive: { backgroundColor: '#eeeeeeff' },
   tabText: { fontSize: 14, fontWeight: '600', color: '#9CA3AF' },
   tabTextActive: { color: '#404072ff', fontWeight: '700' },
 
@@ -435,7 +435,7 @@ const styles = StyleSheet.create({
   metaContainer: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
   dateLabel: { fontSize: 13, color: '#6B7280', fontWeight: '500' },
   timeLabel: { fontSize: 13, color: '#1F2937', fontWeight: '700' },
-  directionLabel: { fontSize: 13, color: '#4B5563', fontStyle: 'italic', backgroundColor: 'transparent' },
+  directionLabel: { fontSize: 13, color: '#4B5563', fontStyle: 'italic', backgroundColor: 'transparent', paddingRight: 4, },
   verticalSep: { width: 1, height: 10, backgroundColor: '#D1D5DB', marginHorizontal: 8 },
 
   green: { color: '#059669' }, 

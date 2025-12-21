@@ -17,14 +17,11 @@ export default function ParentProfileScreen() {
 
   const screenHeight = Dimensions.get('window').height;
   
-  // Animation for Opening/Closing the Modal
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
   
-  // Animation for lifting the sheet when keyboard opens
   const keyboardOffset = useRef(new Animated.Value(0)).current;
 
-  // --- Keyboard Listeners (Fixed for Android) ---
   useEffect(() => {
     const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
     const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
@@ -184,14 +181,13 @@ export default function ParentProfileScreen() {
             <Pressable style={{flex: 1}} onPress={closeModal} />
           </Animated.View>
 
-          {/* Draggable Sheet with DUAL Transforms */}
           <Animated.View 
             style={[
               styles.modalSheet, 
               { 
                 transform: [
-                    { translateY: slideAnim },     // Entrance Animation
-                    { translateY: keyboardOffset } // Keyboard Lift Animation
+                    { translateY: slideAnim },     
+                    { translateY: keyboardOffset } 
                 ] 
               }
             ]}

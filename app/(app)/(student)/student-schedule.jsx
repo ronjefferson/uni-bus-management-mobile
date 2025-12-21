@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { 
   View, Text, StyleSheet, FlatList, RefreshControl, 
   ActivityIndicator, TextInput, TouchableOpacity, Modal, 
-  Pressable, Platform, Animated, Dimensions, Easing 
+  Pressable, Platform, Animated, Dimensions, PanResponder 
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,29 +25,47 @@ export default function ScheduleScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [pickerTarget, setPickerTarget] = useState('');
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(0)).current;
   const screenHeight = Dimensions.get('window').height;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(screenHeight)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 0,
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          slideAnim.setValue(gestureState.dy);
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 150 || gestureState.vy > 0.5) {
+          closeModal();
+        } else {
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+            bounciness: 4
+          }).start();
+        }
+      },
+    })
+  ).current;
 
   const openModal = () => {
     setFilterVisible(true); 
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
-      Animated.spring(slideAnim, { toValue: 1, useNativeDriver: true, damping: 20 })
+      Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, damping: 20 })
     ]).start();
   };
 
   const closeModal = () => {
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 250, useNativeDriver: true, easing: Easing.in(Easing.cubic) })
+      Animated.timing(slideAnim, { toValue: screenHeight, duration: 250, useNativeDriver: true })
     ]).start(() => setFilterVisible(false));
   };
-
-  const sheetTranslateY = slideAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [screenHeight, 0],
-  });
 
   const backdropOpacity = fadeAnim.interpolate({
     inputRange: [0, 1],
@@ -196,9 +214,14 @@ export default function ScheduleScreen() {
             <Pressable style={{flex: 1}} onPress={closeModal} />
           </Animated.View>
 
-          <Animated.View style={[styles.modalSheet, { transform: [{ translateY: sheetTranslateY }] }]}>
-            <View style={styles.sheetHandle} />
-            <Text style={styles.sheetTitle}>Filter Options</Text>
+          <Animated.View 
+            style={[styles.modalSheet, { transform: [{ translateY: slideAnim }] }]}
+            {...panResponder.panHandlers}
+          >
+            <View style={styles.dragHandleArea}>
+              <View style={styles.sheetHandle} />
+              <Text style={styles.sheetTitle}>Filter Options</Text>
+            </View>
 
             <View style={{ marginBottom: 15 }}>
               <Text style={styles.label}>Bus Number</Text>
@@ -345,7 +368,7 @@ const styles = StyleSheet.create({
   busText: { fontWeight: '700', fontSize: 16, color: '#333' },
   dateText: { color: '#64748B', fontSize: 13, marginTop: 2 },
   statusText: { fontWeight: '700', fontSize: 14 },
-  directionText: { color: '#64748B', fontSize: 12, marginTop: 2, textAlign: 'right' },
+  directionText: { color: '#64748B', fontSize: 12, marginTop: 2, textAlign: 'right', fontStyle: 'italic', paddingRight: 4 },
   
   green: { color: '#059669' }, 
   red: { color: '#DC2626' }, 
@@ -355,12 +378,28 @@ const styles = StyleSheet.create({
   modalContainer: { flex: 1, justifyContent: 'flex-end' },
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
   modalSheet: { backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 40, elevation: 10 },
-  sheetHandle: { width: 40, height: 5, backgroundColor: '#e5e7eb', borderRadius: 3, alignSelf: 'center', marginBottom: 20 },
+  
+  dragHandleArea: { alignItems: 'center', width: '100%' },
+  sheetHandle: { width: 40, height: 5, backgroundColor: '#e5e7eb', borderRadius: 3, marginBottom: 15 },
   sheetTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   
   row: { flexDirection: 'row', gap: 10, marginBottom: 15 },
-  input: { borderWidth: 1, borderColor: '#e5e7eb', padding: 12, borderRadius: 10, backgroundColor: '#f9fafb' },
-  dateInputButton: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#e5e7eb', padding: 12, borderRadius: 10, backgroundColor: '#f9fafb' },
+  
+  input: { 
+    padding: 12, 
+    borderRadius: 10, 
+    backgroundColor: '#F3F4F6',
+    color: '#1F2937'
+  },
+  dateInputButton: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 8, 
+    padding: 12, 
+    borderRadius: 10, 
+    backgroundColor: '#F3F4F6' 
+  },
+  
   dateText: { fontSize: 14, color: '#333' },
   label: { fontSize: 13, fontWeight: '600', marginBottom: 6, color: '#4B5563' },
   rowWrap: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 15 },

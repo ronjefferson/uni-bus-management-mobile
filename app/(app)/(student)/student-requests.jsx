@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { 
   View, Text, StyleSheet, RefreshControl, 
   ActivityIndicator, TextInput, TouchableOpacity, Modal, 
-  Pressable, Platform, Animated, Dimensions, Easing, FlatList 
+  Pressable, Platform, Animated, Dimensions, FlatList, PanResponder 
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -76,32 +76,78 @@ export default function RequestsScreen() {
   const screenHeight = Dimensions.get('window').height;
   
   const filterFade = useRef(new Animated.Value(0)).current;
-  const filterSlide = useRef(new Animated.Value(0)).current;
+  const filterSlide = useRef(new Animated.Value(screenHeight)).current;
 
   const createFade = useRef(new Animated.Value(0)).current;
-  const createSlide = useRef(new Animated.Value(0)).current;
+  const createSlide = useRef(new Animated.Value(screenHeight)).current;
 
-  const animateModal = (visible, fadeVal, slideVal, setVisibleFunc) => {
-    if (visible) {
-      setVisibleFunc(true);
-      Animated.parallel([
-        Animated.timing(fadeVal, { toValue: 1, duration: 300, useNativeDriver: true }),
-        Animated.spring(slideVal, { toValue: 1, useNativeDriver: true, damping: 20 })
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(fadeVal, { toValue: 0, duration: 200, useNativeDriver: true }),
-        Animated.timing(slideVal, { toValue: 0, duration: 250, useNativeDriver: true, easing: Easing.in(Easing.cubic) })
-      ]).start(() => setVisibleFunc(false));
-    }
+  const filterPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 0,
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) filterSlide.setValue(gestureState.dy);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 150 || gestureState.vy > 0.5) {
+          closeFilter();
+        } else {
+          Animated.spring(filterSlide, { toValue: 0, useNativeDriver: true, bounciness: 4 }).start();
+        }
+      },
+    })
+  ).current;
+
+  const createPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 0,
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) createSlide.setValue(gestureState.dy);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 150 || gestureState.vy > 0.5) {
+          closeCreate();
+        } else {
+          Animated.spring(createSlide, { toValue: 0, useNativeDriver: true, bounciness: 4 }).start();
+        }
+      },
+    })
+  ).current;
+
+  const openFilter = () => {
+    setFilterVisible(true);
+    Animated.parallel([
+      Animated.timing(filterFade, { toValue: 1, duration: 300, useNativeDriver: true }),
+      Animated.spring(filterSlide, { toValue: 0, useNativeDriver: true, damping: 20 })
+    ]).start();
   };
 
-  const toggleFilter = (open) => animateModal(open, filterFade, filterSlide, setFilterVisible);
-  const toggleCreate = (open) => animateModal(open, createFade, createSlide, setCreateVisible);
+  const closeFilter = () => {
+    Animated.parallel([
+      Animated.timing(filterFade, { toValue: 0, duration: 200, useNativeDriver: true }),
+      Animated.timing(filterSlide, { toValue: screenHeight, duration: 250, useNativeDriver: true })
+    ]).start(() => setFilterVisible(false));
+  };
+
+  const openCreate = () => {
+    setCreateVisible(true);
+    Animated.parallel([
+      Animated.timing(createFade, { toValue: 1, duration: 300, useNativeDriver: true }),
+      Animated.spring(createSlide, { toValue: 0, useNativeDriver: true, damping: 20 })
+    ]).start();
+  };
+
+  const closeCreate = () => {
+    Animated.parallel([
+      Animated.timing(createFade, { toValue: 0, duration: 200, useNativeDriver: true }),
+      Animated.timing(createSlide, { toValue: screenHeight, duration: 250, useNativeDriver: true })
+    ]).start(() => setCreateVisible(false));
+  };
 
   const handleCreateSubmit = async () => {
     const success = await submitRequest();
-    if (success) toggleCreate(false);
+    if (success) closeCreate();
   };
 
   const openDatePicker = (mode, target) => {
@@ -137,12 +183,12 @@ export default function RequestsScreen() {
 
   const handleApply = () => {
     applyFilters();
-    toggleFilter(false);
+    closeFilter();
   };
 
   const handleClear = () => {
     resetFilters();
-    toggleFilter(false);
+    closeFilter();
   };
 
   const DateInput = ({ label, value, onPress }) => (
@@ -173,12 +219,12 @@ export default function RequestsScreen() {
       <View style={styles.topSection}>
         <View style={styles.headerRow}>
           <Text style={styles.headerTitle}>My Requests</Text>
-          <TouchableOpacity style={styles.iconButton} onPress={() => toggleFilter(true)}>
+          <TouchableOpacity style={styles.iconButton} onPress={openFilter}>
             <Ionicons name="options" size={24} color="#404072ff" />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.createButton} onPress={() => toggleCreate(true)}>
+        <TouchableOpacity style={styles.createButton} onPress={openCreate}>
           <Ionicons name="add-circle" size={24} color="#404072ff" />
           <Text style={styles.createText}>New Bus Request</Text>
         </TouchableOpacity>
@@ -217,12 +263,15 @@ export default function RequestsScreen() {
         />
       </View>
 
-      <Modal transparent={true} visible={isFilterVisible} onRequestClose={() => toggleFilter(false)} animationType="none">
+      <Modal transparent={true} visible={isFilterVisible} onRequestClose={closeFilter} animationType="none">
         <View style={styles.modalContainer}>
           <Animated.View style={[styles.backdrop, { opacity: filterFade }]}>
-            <Pressable style={{flex:1}} onPress={() => toggleFilter(false)}/>
+            <Pressable style={{flex:1}} onPress={closeFilter}/>
           </Animated.View>
-          <Animated.View style={[styles.modalSheet, { transform: [{ translateY: filterSlide.interpolate({inputRange:[0,1], outputRange:[screenHeight,0]}) }] }]}>
+          <Animated.View 
+            style={[styles.modalSheet, { transform: [{ translateY: filterSlide }] }]}
+            {...filterPanResponder.panHandlers}
+          >
             <View style={styles.sheetHandle} />
             <Text style={styles.sheetTitle}>Filter Requests</Text>
             <View style={styles.row}>
@@ -249,12 +298,15 @@ export default function RequestsScreen() {
         </View>
       </Modal>
 
-      <Modal transparent={true} visible={isCreateVisible} onRequestClose={() => toggleCreate(false)} animationType="none">
+      <Modal transparent={true} visible={isCreateVisible} onRequestClose={closeCreate} animationType="none">
         <View style={styles.modalContainer}>
           <Animated.View style={[styles.backdrop, { opacity: createFade }]}>
-            <Pressable style={{flex:1}} onPress={() => toggleCreate(false)}/>
+            <Pressable style={{flex:1}} onPress={closeCreate}/>
           </Animated.View>
-          <Animated.View style={[styles.modalSheet, { transform: [{ translateY: createSlide.interpolate({inputRange:[0,1], outputRange:[screenHeight,0]}) }] }]}>
+          <Animated.View 
+            style={[styles.modalSheet, { transform: [{ translateY: createSlide }] }]}
+            {...createPanResponder.panHandlers}
+          >
             <View style={styles.sheetHandle} />
             <Text style={styles.sheetTitle}>New Bus Request</Text>
             

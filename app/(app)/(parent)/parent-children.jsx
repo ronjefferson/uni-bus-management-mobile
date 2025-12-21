@@ -2,12 +2,12 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { 
   View, Text, StyleSheet, FlatList, RefreshControl, 
   ActivityIndicator, TouchableOpacity, LayoutAnimation, 
-  Platform, UIManager, Modal, Animated, Dimensions, Pressable, TextInput 
+  Platform, UIManager, Modal, Animated, Dimensions, Pressable, TextInput, PanResponder 
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { getMyChildren, getChildLogs } from '../../../src/features/parent/parentService';
+import { getMyChildren } from '../../../src/features/parent/parentService';
 import { useChildLogsViewModel } from '../../../src/features/parent/useChildLogsViewModel';
 
 if (Platform.OS === 'android') {
@@ -51,9 +51,26 @@ const ChildLogsSheet = ({ student, onClose }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [pickerTarget, setPickerTarget] = useState('');
 
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(0)).current;
   const screenHeight = Dimensions.get('window').height;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(screenHeight)).current;
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => gestureState.dy > 0,
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) slideAnim.setValue(gestureState.dy);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > 150 || gestureState.vy > 0.5) {
+          closeFilter();
+        } else {
+          Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, bounciness: 4 }).start();
+        }
+      },
+    })
+  ).current;
 
   const formatDate = (isoString) => {
     const date = new Date(isoString);
@@ -69,14 +86,14 @@ const ChildLogsSheet = ({ student, onClose }) => {
     setFilterVisible(true);
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
-      Animated.spring(slideAnim, { toValue: 1, useNativeDriver: true, damping: 20 })
+      Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, damping: 20 })
     ]).start();
   };
 
   const closeFilter = () => {
     Animated.parallel([
       Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
-      Animated.timing(slideAnim, { toValue: 0, duration: 250, useNativeDriver: true })
+      Animated.timing(slideAnim, { toValue: screenHeight, duration: 250, useNativeDriver: true })
     ]).start(() => setFilterVisible(false));
   };
 
@@ -166,12 +183,15 @@ const ChildLogsSheet = ({ student, onClose }) => {
             style={[
               styles.filterSheet, 
               { 
-                transform: [{ translateY: slideAnim.interpolate({inputRange:[0,1], outputRange:[screenHeight, 0]}) }],
-                paddingBottom: Math.max(insets.bottom + 20, 40) // Dynamic safe area padding
+                transform: [{ translateY: slideAnim }],
+                paddingBottom: Math.max(insets.bottom + 20, 40)
               }
             ]}
+            {...panResponder.panHandlers}
           >
-            <View style={styles.sheetHandle} />
+            <View style={styles.dragHandleArea}>
+              <View style={styles.sheetHandle} />
+            </View>
             <Text style={styles.filterTitle}>Filter Logs</Text>
 
             <View style={{ marginBottom: 15 }}>
@@ -399,7 +419,6 @@ export default function MyChildrenScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#404072ff' },
-  // Changed background color to white to show the spinner correctly
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffff' },
   topSection: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 25 },
   headerTitle: { fontSize: 28, fontWeight: '800', color: '#ffffff', marginBottom: 5 },
@@ -465,12 +484,17 @@ const styles = StyleSheet.create({
   modalContainer: { flex: 1, justifyContent: 'flex-end' },
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.5)' },
   filterSheet: { backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, paddingBottom: 0 },
-  sheetHandle: { width: 40, height: 5, backgroundColor: '#E5E7EB', borderRadius: 3, alignSelf: 'center', marginBottom: 20, marginTop: 10 },
+  
+  dragHandleArea: { width: '100%', alignItems: 'center' },
+  sheetHandle: { width: 40, height: 5, backgroundColor: '#E5E7EB', borderRadius: 3, marginBottom: 20, marginTop: 0 },
+  
   filterTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   filterLabel: { fontSize: 13, fontWeight: '600', marginBottom: 8, color: '#374151' },
-  input: { borderWidth: 1, borderColor: '#E5E7EB', padding: 12, borderRadius: 10, backgroundColor: '#F9FAFB' },
+  
+  input: { padding: 12, borderRadius: 10, backgroundColor: '#F9FAFB' },
   dateRow: { flexDirection: 'row', gap: 10, marginBottom: 15 },
-  dateInputButton: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#E5E7EB', padding: 12, borderRadius: 10, backgroundColor: '#F9FAFB' },
+  dateInputButton: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: 10, backgroundColor: '#F9FAFB' },
+  
   dateText: { fontSize: 14, color: '#374151' },
   chipRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap', marginBottom: 20 },
   chip: { paddingVertical: 8, paddingHorizontal: 16, borderRadius: 20, backgroundColor: '#F3F4F6' },

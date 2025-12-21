@@ -15,14 +15,12 @@ if (Platform.OS === 'android') {
   }
 }
 
-
 const ParentDetailSheet = ({ parent, onClose }) => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(Dimensions.get('window').height)).current;
   const screenHeight = Dimensions.get('window').height;
 
   const { children } = parent;
-
 
   const panResponder = useRef(
     PanResponder.create({
@@ -79,13 +77,11 @@ const ParentDetailSheet = ({ parent, onClose }) => {
           { transform: [{ translateY: slideAnim }] }
         ]}
       >
-        {/* Drag Handle Area */}
         <View style={styles.dragHandleArea} {...panResponder.panHandlers}>
           <View style={styles.sheetHandle} />
         </View>
         
         <ScrollView contentContainerStyle={styles.sheetContent}>
-          {/* Header Section */}
           <View style={styles.sheetHeader}>
             <View style={styles.sheetAvatar}>
               <Text style={styles.sheetAvatarText}>
@@ -96,7 +92,6 @@ const ParentDetailSheet = ({ parent, onClose }) => {
             <Text style={styles.sheetId}>ID: {parent.id}</Text>
           </View>
 
-          {/* Parent Info */}
           <View style={styles.infoSection}>
             <Text style={styles.sectionTitle}>Contact Information</Text>
             
@@ -119,7 +114,6 @@ const ParentDetailSheet = ({ parent, onClose }) => {
 
           <View style={styles.divider} />
 
-          {/* Children Section */}
           <View style={styles.infoSection}>
             <Text style={styles.sectionTitle}>Linked Children</Text>
             {children && children.length > 0 ? (
@@ -269,13 +263,12 @@ const styles = StyleSheet.create({
 
   whiteSheet: { flex: 1, backgroundColor: '#F9FAFB', borderTopLeftRadius: 32, borderTopRightRadius: 32, overflow: 'hidden' },
 
-  searchContainer: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16, backgroundColor: '#F9FAFB', borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.03)' },
-  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#ffffff', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 4, elevation: 2 },
+  searchContainer: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16, backgroundColor: '#F9FAFB', borderBottomWidth: 0 },
+  searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12 },
   searchInput: { flex: 1, fontSize: 16, color: '#1F2937' },
 
   listContent: { paddingHorizontal: 24, paddingTop: 10, paddingBottom: 40 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 40 },
-
 
   card: { backgroundColor: '#ffffff', borderRadius: 16, padding: 16, marginBottom: 12 },
   row: { flexDirection: 'row', alignItems: 'center' },
@@ -306,7 +299,6 @@ const styles = StyleSheet.create({
   infoBox: { flex: 1, backgroundColor: '#F9FAFB', padding: 12, borderRadius: 12 },
   label: { fontSize: 12, color: '#6B7280', marginBottom: 4 },
   value: { fontSize: 15, fontWeight: '600', color: '#1F2937' },
-
 
   childCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9FAFB', padding: 16, borderRadius: 12, marginBottom: 10 },
   childAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#E5E7EB', justifyContent: 'center', alignItems: 'center' },
