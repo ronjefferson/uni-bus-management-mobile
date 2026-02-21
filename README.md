@@ -9,13 +9,13 @@ Mobile frontend for the University Bus Pass & Attendance Management System. This
 - **View Schedule**: See assigned bus routes and schedules
 - **Attendance History**: View recent scan logs and boarding history
 - **Request Bus Pass**: Submit temporary/emergency bus pass requests
-- **Push Notifications**: Receive FCM notifications about passes and schedules
+- **Push Notifications**: Receive push notifications about passes and schedules
 
 ### Parent Portal
 - **Child Linking**: Link and view registered students
 - **Attendance Monitoring**: View attendance history for linked children
 - **Schedule Viewing**: View bus schedules for each child
-- **Notifications**: Receive alerts via FCM
+- **Notifications**: Receive alerts via push notifications
 
 ### Admin Dashboard (mobile)
 - **View Students & Parents**: Browse accounts and relationships
@@ -27,8 +27,7 @@ Mobile frontend for the University Bus Pass & Attendance Management System. This
 * [![Expo](https://img.shields.io/badge/Expo-%7E54.0.25-4dc0b5?style=for-the-badge&logo=expo&logoColor=white)](https://expo.dev)
 * [![React Native](https://img.shields.io/badge/React%20Native-0.81.5-61DAFB?style=for-the-badge&logo=react)](https://reactnative.dev)
 * [![React](https://img.shields.io/badge/React-19.1.0-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org)
-* [![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org)
-* [![Firebase](https://img.shields.io/badge/Firebase-Cloud%20Messaging-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com)
+* [![JavaScript](https://img.shields.io/badge/JavaScript-ES6-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 * [![Expo Router](https://img.shields.io/badge/Expo%20Router-6.x-282C34?style=for-the-badge)](https://docs.expo.dev/router/)
 * [![Axios](https://img.shields.io/badge/Axios-HTTP-5A29E4?style=for-the-badge)](https://github.com/axios/axios)
 * [![ESLint](https://img.shields.io/badge/ESLint-9.25.0-4B32C3?style=for-the-badge&logo=eslint)](https://eslint.org)
@@ -76,10 +75,10 @@ npm run android
 
 This mobile app expects a REST API backend (example: Django REST API). Configure the API base URL in your environment; common endpoints include:
 
-- `POST /api/token/` � login (JWT)
-- `GET /api/students/me/` � student profile
-- `POST /api/students/requests/` � create bus-pass request
-- `POST /api/notifications/register-device/` � register FCM token
+- `POST /api/token/` login (JWT)
+- `GET /api/students/me/` student profile
+- `POST /api/students/requests/` create bus-pass request
+- `POST /api/notifications/register-device/` register FCM token
 
 (Backend examples and full API docs live in the server repository.)
 

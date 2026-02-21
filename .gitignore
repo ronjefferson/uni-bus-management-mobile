@@ -42,3 +42,8 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Firebase / Google service credential files (keep private)
+google-services.json
+android/app/google-services.json
+firebase_credentials.json
