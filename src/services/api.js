@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { router } from 'expo-router';
 
-const BASE_URL = 'https://119203009014.ngrok-free.app/api/'; 
+const BASE_URL = 'https://1f6ba547aa10.ngrok-free.app/api/'; 
 
 const api = axios.create({
   baseURL: BASE_URL,
